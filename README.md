@@ -44,10 +44,10 @@ You can understand this line as
 const { name, age } = yield* <ProfileForm key="profile">
 ```
 
-which means that `ProfileForm` is rendered to retrieve name and age values. 
+which means that `ProfileForm` is rendered to retrieve `name` and `age`. 
 The current interface is introduced for type inference, though the JSX version is more concise.
 
-You can use `name`` and `age` in the next step.
+You can use `name` and `age` in the next step.
 You can use them to set props for the next form component, or you can use them to decide which step to go to next.
 
 elements is an array of elements that have been rendered so far.
