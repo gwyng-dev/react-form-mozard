@@ -1,94 +1,59 @@
-# reat-eff-hook
+# react-form-mozard
 
-**react-eff-hook** introduces `useEff`, an enhanced `useEffect` powered by Generator.
+**react-form-mozard** helps you build multi-step forms (also known as form wizards) easily.
 
 ## Installation
 ```shell
-npm i react-eff-hook
+npm i react-form-mozard
 ```
 
-## Usage
+## Motivation
 
-Let's say you want to make a counter that increments every second.
+A multi-step form is a common pattern in web development. However, it introduces complex and dirty state management. The solution is monad, once again.
 
-```js
-useEff(function*() {
-  while (true) {
-    yield delay(1000)
-    
-    setCount((x) => x + 1)
-  }
-}, [])
-```
+Mozard composes forms just like Mozart composes songs.
 
-So, why is it better? Let's compare it to the code using `useEffect`.
+## Example
 
-```js
-useEffect(() => {
-  let cancelled = false
-  void (async () => {
-    while (!cancelled) {
-      await delay(1000)
+```ts
+const { elements, done, value, get } = useMozard<MozardSchema, Result>({
+  values,
+  onNext: setValue,
+  *do(step) {
+    const { name, age } = yield* step("profile", ProfileForm, {});
+    const isMinor = age < 20;
 
-      setCount((x) => x + 1)
+    const { country } = yield* step("country", CountryForm, { isMinor });
+    if (country !== "Korea") {
+      return {
+        name,
+        age,
+        country,
+      };
     }
-  })()
-  return () => { cancelled = true }
-}, [])
+
+    const { side } = yield* step("whichKorea", WhichKoreaForm, {});
+    return {
+      name,
+      age,
+      country: `${side} ${country}`,
+    };
+  },
+});
 ```
 
-- Ugly IIFE to avoid being asynchronous callback
-- Manually stop the loop on cleanup
-
-They are all gone with `useEff`.
-
-If you wish to have the promise value's type inferred, use `wait` in conjunction with `yield*` like so:
-```js
-const data = yield* wait(fetch(url))
+Let's break down the code above.
+```ts
+const { name, age } = yield* step("profile", ProfileForm, {});
 ```
-Then you will get `data` with its right type.
-
-Furthremore, `useEffect` doesn't work fine with new `using` syntax in TypeScript 5.2.
-
-`useEff` does.
-
-```js
-class Interval {
-  constructor(fn: () => void, interval: number) {
-    this.interval = setInterval(fn, interval); 
-  }
-  
-  [Symbol.dispose]() {
-    clearInterval(this.interval)
-  }
-}
-
-const forever = new Promise(() => {})
-
-useEff(function*() {
-  using interval = new Interval(
-    () => { setCount((x) => x + 1) }, 
-    1000)
-
-  yield forever
-}, [])
+You can understand this line as
+```tsx
+const { name, age } = yield* <ProfileForm key="profile">
 ```
 
-Also, you can use `useLayoutEff` and `useInsertionEff` which are better versions of `useLayoutEffect` and `useInsertionEffect` respectively.
+which means that `ProfileForm` is rendered to retrieve name and age values. 
+The current interface is introduced for type inference, though the JSX version is more concise.
 
-## Caveat(or Feature?)
-While `useEff` automatically handles cleanup, it handles erros in a different way from `useEffect`.
 
-Both `useEff` and `useEffect` trigger cleanup functions upon deps changes or component unmounts, ensuring you don't need to worry about successful effects. 
-
-`useEffect` disregards errors thrown by promises within it, whereas the disposables within `useEff` invoke their dispose functions when any error occurs. 
-
-While this may be seen as a more desirable behavior, it may not be compatible with `useEffect`.
-
-However, I'm not entirely certain. Please let me know if you encounter any issues with this behavior.
-
-## Further Reading
-
-[This RFC](https://github.com/reactjs/rfcs/pull/204) has proposed the same thing, but it's been inactive for a while.
-
-I hope the introduction of `using` syntax in TypeScript 5.2 will help this RFC to be accepted.
+You can use the name and age values in the next step.
+You can use them to set props for the next step, or you can use them to decide which step to go to next.
