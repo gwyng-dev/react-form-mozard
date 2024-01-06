@@ -25,18 +25,11 @@ const { elements, done, value, get } = useMozard<MozardSchema, Result>({
 
     const { country } = yield* step("country", CountryForm, { isMinor });
     if (country !== "Korea") {
-      return {
-        name,
-        age,
-        country,
-      };
+      return { name, age, country };
     }
 
     const { side } = yield* step("whichKorea", WhichKoreaForm, {});
-    return {
-      name,
-      age,
-      country: `${side} ${country}`,
+    return { name, age, country: `${side} ${country}` }
     };
   },
 });
