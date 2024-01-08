@@ -74,6 +74,7 @@ export const useMozard = <T extends Schema, R>(config: MozardConfig<T, R>) => {
 
       const { key, component, props } = value;
 
+      const currentIndex = index;
       elements.push(
         React.createElement(component, {
           ...props,
@@ -81,8 +82,8 @@ export const useMozard = <T extends Schema, R>(config: MozardConfig<T, R>) => {
           onSubmit(data) {
             const newEntry: Entry<T> = [key, data];
             onNext(
-              values.length < index
-                ? values.with(index, newEntry)
+              currentIndex < values.length
+                ? values.with(currentIndex, newEntry)
                 : values.concat([newEntry]),
             );
           },
