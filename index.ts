@@ -39,7 +39,10 @@ export type UseMozardReturn<T extends Schema, R> = {
   get<K extends keyof T & string>(key: K): T[K] | undefined;
 } & ({ done: true; value: R } | { done: false; value?: undefined });
 
-export const useMozard = <T extends Schema, R>(config: MozardConfig<T, R>) => {
+export const useMozard = <T extends Schema, R>(
+  config: MozardConfig<T, R>,
+  deps: readonly unknown[],
+) => {
   const { values, onNext } = config;
 
   const get = <K extends keyof T & string>(key: K) => {
@@ -103,5 +106,5 @@ export const useMozard = <T extends Schema, R>(config: MozardConfig<T, R>) => {
       lastValue = oldValue;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values]);
+  }, [values, ...deps]);
 };

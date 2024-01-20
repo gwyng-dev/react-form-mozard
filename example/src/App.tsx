@@ -7,30 +7,33 @@ import { useState } from "react";
 
 function App() {
   const [values, setValue] = useState<Entry<Schema>[]>([]);
-  const { elements, done, value, get } = useMozard<Schema, Result>({
-    values,
-    onNext: setValue,
-    *do(step) {
-      const { name, age } = yield* step("profile", ProfileForm, {});
-      const isMinor = age < 20;
+  const { elements, done, value, get } = useMozard<Schema, Result>(
+    {
+      values,
+      onNext: setValue,
+      *do(step) {
+        const { name, age } = yield* step("profile", ProfileForm, {});
+        const isMinor = age < 20;
 
-      const { country } = yield* step("country", CountryForm, { isMinor });
-      if (country !== "Korea") {
+        const { country } = yield* step("country", CountryForm, { isMinor });
+        if (country !== "Korea") {
+          return {
+            name,
+            age,
+            country,
+          };
+        }
+
+        const { side } = yield* step("whichKorea", WhichKoreaForm, {});
         return {
           name,
           age,
-          country,
+          country: `${side} ${country}`,
         };
-      }
-
-      const { side } = yield* step("whichKorea", WhichKoreaForm, {});
-      return {
-        name,
-        age,
-        country: `${side} ${country}`,
-      };
+      },
     },
-  });
+    [],
+  );
 
   const profile = get("profile");
   const country = get("country");

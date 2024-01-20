@@ -32,7 +32,7 @@ const { elements, done, value, get } = useMozard<MozardSchema, Result>({
     return { name, age, country: `${side} ${country}` }
     };
   },
-});
+}, []);
 ```
 
 Let's break down the code above.
