@@ -68,11 +68,11 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Docs',
         },
         { to: '/blog', label: 'Blog', position: 'left' },
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/gwyng-dev/react-form-mozard',
           label: 'GitHub',
           position: 'right',
         },
@@ -101,10 +101,6 @@ const config: Config = {
               label: 'Discord',
               href: 'https://discordapp.com/invite/docusaurus',
             },
-            {
-              label: 'Twitter',
-              href: 'https://twitter.com/docusaurus',
-            },
           ],
         },
         {
@@ -116,12 +112,12 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/gwyng-dev/react-form-mozard',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} gwyng-dev, Inc. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
