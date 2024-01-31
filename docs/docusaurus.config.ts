@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'react-form-mozard',
-  tagline: 'Dinosaurs are cool',
+  tagline: 'react-form-mozard are cool',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
