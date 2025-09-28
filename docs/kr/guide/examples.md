@@ -26,10 +26,9 @@ type Result = {
   preferences: Preferences;
 };
 
-// 폼 컴포넌트들
 const ProfileForm = (props: MozardStepProps<Profile>) => {
   const { register, handleSubmit } = useForm<Profile>();
-  
+
   return (
     <form onSubmit={handleSubmit(props.onSubmit)}>
       <h2>기본 정보</h2>
@@ -43,14 +42,14 @@ const ProfileForm = (props: MozardStepProps<Profile>) => {
 
 const ParentConsentForm = (props: MozardStepProps<ParentConsent>) => {
   const { register, handleSubmit } = useForm<ParentConsent>();
-  
+
   return (
     <form onSubmit={handleSubmit(props.onSubmit)}>
-      <h2>보호자 동의 (미성년자)</h2>
+      <h2>보호자 동의 (18세 미만)</h2>
       <input {...register("parentEmail", { required: true })} placeholder="보호자 이메일" />
       <label>
         <input {...register("agreed", { required: true })} type="checkbox" />
-        보호자가 가입에 동의합니다
+        보호자가 가입에 동의했습니다
       </label>
       <button type="submit">다음</button>
     </form>
@@ -59,14 +58,14 @@ const ParentConsentForm = (props: MozardStepProps<ParentConsent>) => {
 
 const PreferencesForm = (props: MozardStepProps<Preferences> & { isMinor: boolean }) => {
   const { register, handleSubmit } = useForm<Preferences>();
-  
+
   return (
     <form onSubmit={handleSubmit(props.onSubmit)}>
       <h2>환경설정</h2>
       {!props.isMinor && (
         <label>
           <input {...register("newsletter")} type="checkbox" />
-          뉴스레터 수신 동의
+          뉴스레터 구독
         </label>
       )}
       <select {...register("theme")}>
@@ -78,40 +77,36 @@ const PreferencesForm = (props: MozardStepProps<Preferences> & { isMinor: boolea
   );
 };
 
-// 메인 앱
-export function SignUpApp() {
+export function RegistrationApp() {
   const [values, setValue] = useState<Entry<Schema>[]>([]);
-  
+
   const { elements, done, value, get } = useMozard<Schema, Result>({
     values,
     onNext: setValue,
     *do(step) {
-      // 1. 기본 정보 수집
       const profile = yield* step("profile", ProfileForm, {});
-      
-      // 2. 미성년자인 경우 보호자 동의 필요
+
       let parentConsent: ParentConsent | undefined;
       if (profile.age < 18) {
         parentConsent = yield* step("parentConsent", ParentConsentForm, {});
       }
-      
-      // 3. 환경설정 (미성년자는 뉴스레터 옵션 제외)
-      const preferences = yield* step("preferences", PreferencesForm, { 
-        isMinor: profile.age < 18 
+
+      const preferences = yield* step("preferences", PreferencesForm, {
+        isMinor: profile.age < 18
       });
-      
+
       return { profile, parentConsent, preferences };
     }
   }, []);
-  
+
   const profile = get("profile");
   const currentStep = values.length + 1;
   const totalSteps = profile?.age < 18 ? 3 : 2;
-  
+
   return (
     <div>
       <div>진행률: {currentStep}/{totalSteps}</div>
-      
+
       {done ? (
         <div>
           <h1>가입 완료!</h1>
@@ -122,7 +117,7 @@ export function SignUpApp() {
         <div>
           {values.length > 0 && (
             <button onClick={() => setValue(values.slice(0, -1))}>
-              이전 단계
+              이전
             </button>
           )}
           {elements.at(-1)}
@@ -133,24 +128,18 @@ export function SignUpApp() {
 }
 ```
 
-## 2. 동적 아이템 추가 플로우
+## 2. 동적 아이템 수집
 
-사용자가 원하는 만큼 아이템을 추가할 수 있는 동적 폼입니다.
+동적 폼 루프를 구현하는 방법을 보여주는 예제입니다:
 
 ```tsx
 type User = { name: string; role: 'user' | 'admin' };
 type Item = { title: string; description: string };
 type ContinueChoice = { continue: boolean };
 
-type DynamicSchema = {
-  user: User;
-  [key: `item-${number}`]: Item;
-  [key: `continue-${number}`]: ContinueChoice;
-};
-
 const ItemForm = (props: MozardStepProps<Item> & { index: number }) => {
   const { register, handleSubmit } = useForm<Item>();
-  
+
   return (
     <form onSubmit={handleSubmit(props.onSubmit)}>
       <h2>아이템 #{props.index + 1}</h2>
@@ -163,47 +152,45 @@ const ItemForm = (props: MozardStepProps<Item> & { index: number }) => {
 
 const ContinueForm = (props: MozardStepProps<ContinueChoice> & { itemCount: number }) => {
   const { register, handleSubmit } = useForm<ContinueChoice>();
-  
+
   return (
     <form onSubmit={handleSubmit(props.onSubmit)}>
       <h2>현재 {props.itemCount}개 아이템이 추가되었습니다</h2>
       <label>
         <input {...register("continue")} type="checkbox" />
-        아이템을 더 추가하시겠습니까?
+        더 추가하시겠습니까?
       </label>
-      <button type="submit">결정</button>
+      <button type="submit">계속</button>
     </form>
   );
 };
 
 export function DynamicItemApp() {
-  const [values, setValue] = useState<Entry<DynamicSchema>[]>([]);
-  
-  const { elements, done, value } = useMozard<DynamicSchema, { user: User; items: Item[] }>({
+  const [values, setValue] = useState<Entry<any>[]>([]);
+
+  const { elements, done, value } = useMozard({
     values,
     onNext: setValue,
     *do(step) {
       const user = yield* step("user", UserForm, {});
-      
+
       const items: Item[] = [];
       let shouldContinue = true;
-      
-      // 첫 번째 아이템은 필수
+
       const firstItem = yield* step("item-0", ItemForm, { index: 0 });
       items.push(firstItem);
-      
-      // 추가 아이템들은 사용자 선택에 따라
+
       while (shouldContinue) {
         const { continue: wantMore } = yield* step(
-          `continue-${items.length}`, 
-          ContinueForm, 
+          `continue-${items.length}`,
+          ContinueForm,
           { itemCount: items.length }
         );
-        
+
         if (wantMore) {
           const nextItem = yield* step(
-            `item-${items.length}`, 
-            ItemForm, 
+            `item-${items.length}`,
+            ItemForm,
             { index: items.length }
           );
           items.push(nextItem);
@@ -211,17 +198,17 @@ export function DynamicItemApp() {
           shouldContinue = false;
         }
       }
-      
+
       return { user, items };
     }
   }, []);
-  
+
   return (
     <div>
       {done ? (
         <div>
           <h1>완료!</h1>
-          <h2>{value.user.name}님의 아이템 목록:</h2>
+          <h2>{value.user.name}님의 아이템들:</h2>
           <ul>
             {value.items.map((item, i) => (
               <li key={i}>{item.title}: {item.description}</li>
@@ -236,9 +223,9 @@ export function DynamicItemApp() {
 }
 ```
 
-## 3. 복잡한 조건부 분기
+## 3. 복잡한 조건부 플로우
 
-관리자와 일반 사용자에 따라 완전히 다른 플로우를 가지는 예제입니다.
+사용자 타입에 따른 다중 분기 경로를 보여주는 예제입니다:
 
 ```tsx
 type UserType = { type: 'admin' | 'user'; email: string };
@@ -248,18 +235,17 @@ type Verification = { code: string };
 
 export function ConditionalFlowApp() {
   const [values, setValue] = useState<Entry<any>[]>([]);
-  
+
   const { elements, done, value } = useMozard({
     values,
     onNext: setValue,
     *do(step) {
       const userType = yield* step("userType", UserTypeForm, {});
-      
+
       if (userType.type === "admin") {
-        // 관리자 플로우
         const verification = yield* step("verification", VerificationForm, {});
         const adminSettings = yield* step("adminSettings", AdminSettingsForm, {});
-        
+
         return {
           type: "admin" as const,
           email: userType.email,
@@ -267,10 +253,8 @@ export function ConditionalFlowApp() {
           settings: adminSettings
         };
       } else {
-        // 일반 사용자 플로우
         const profile = yield* step("userProfile", UserProfileForm, {});
-        
-        // 관심사가 3개 이상이면 추가 설문
+
         if (profile.interests.length >= 3) {
           const survey = yield* step("survey", SurveyForm, { interests: profile.interests });
           return {
@@ -280,7 +264,7 @@ export function ConditionalFlowApp() {
             survey
           };
         }
-        
+
         return {
           type: "user" as const,
           email: userType.email,
@@ -289,7 +273,7 @@ export function ConditionalFlowApp() {
       }
     }
   }, []);
-  
+
   return (
     <div>
       {done ? (
@@ -324,11 +308,15 @@ yield* step("item", ItemForm, {}); // 반복문에서 중복 가능
 ```typescript
 *do(step) {
   const user = yield* step("user", UserForm, {});
-  
+
   if (user.type === "admin") {
     const settings = yield* step("adminSettings", AdminSettingsForm, {});
     return { user, adminSettings: settings }; // 명시적 키 이름
   }
-  
+
   const profile = yield* step("userProfile", UserProfileForm, {});
-  return { user, profile };
+  return { user, userProfile: profile };
+}
+```
+
+이러한 예제들은 Mozard의 모나딕 합성이 어떻게 복잡한 폼 플로우를 간결하고 타입 안전하게 표현할 수 있는지 보여줍니다. Generator의 `yield*` 구문을 통해 각 단계를 자연스럽게 연결하고, JavaScript의 제어 구조(`if`, `while`, `for`)를 그대로 사용할 수 있습니다.

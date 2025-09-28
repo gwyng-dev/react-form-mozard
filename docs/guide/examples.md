@@ -320,19 +320,4 @@ yield* step("item", ItemForm, {});
 }
 ```
 
-### Error Handling
-
-```typescript
-*do(step) {
-  try {
-    const profile = yield* step("profile", ProfileForm, {});
-    const verification = yield* step("verify", VerificationForm, { email: profile.email });
-    return { profile, verification };
-  } catch (error) {
-    const retry = yield* step("retry", RetryForm, { error });
-    return { error: retry };
-  }
-}
-```
-
 These examples demonstrate how Mozard enables concise, type-safe composition of complex form workflows using standard JavaScript control structures.
