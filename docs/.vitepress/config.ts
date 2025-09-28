@@ -4,6 +4,8 @@ export default defineConfig({
   title: 'React Form Mozard',
   description: 'Monadic form composition library using JavaScript Generators for React',
 
+  base: "/react-form-mozard",
+
   locales: {
     root: {
       label: 'English',
