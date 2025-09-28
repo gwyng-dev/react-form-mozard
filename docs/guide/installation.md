@@ -1,13 +1,24 @@
-# 설치
+# Installation
 
-패키지를 프로젝트에 추가하려면 다음 명령을 실행하세요.
+Install the package using npm:
 
 ```bash
 npm install react-form-mozard
 ```
 
-VitePress 문서를 개발 모드로 실행하려면:
+The library requires React 16.8+ and TypeScript 4.0+ for full functionality.
+
+## Development Setup
+
+For local development with documentation:
 
 ```bash
-npm run docs
+npm run docs:dev
+```
+
+For production build:
+
+```bash
+npm run docs:build
+npm run docs:preview
 ```
