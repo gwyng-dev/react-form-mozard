@@ -331,23 +331,4 @@ yield* step("item", ItemForm, {}); // 반복문에서 중복 가능
   }
   
   const profile = yield* step("userProfile", UserProfileForm, {});
-  return { user, userProfile: profile };
-}
-```
-
-### 3. 에러 처리
-```typescript
-*do(step) {
-  try {
-    const profile = yield* step("profile", ProfileForm, {});
-    const verification = yield* step("verify", VerificationForm, { email: profile.email });
-    return { profile, verification };
-  } catch (error) {
-    // 검증 실패 시 처리
-    const retry = yield* step("retry", RetryForm, { error });
-    return { error: retry };
-  }
-}
-```
-
-이러한 예제들은 Mozard의 모나딕 합성이 어떻게 복잡한 폼 플로우를 간결하고 타입 안전하게 표현할 수 있는지 보여줍니다. Generator의 `yield*` 구문을 통해 각 단계를 자연스럽게 연결하고, JavaScript의 제어 구조(`if`, `while`, `for`)를 그대로 사용할 수 있습니다.
+  return { user, profile };
