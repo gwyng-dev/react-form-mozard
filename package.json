@@ -12,13 +12,17 @@
   ],
   "scripts": {
     "build": "tsc -d --outDir build",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "author": "gwyng",
   "license": "ISC",
   "devDependencies": {
     "@types/react": "^18.2.21",
     "eslint-config-gwyng": "github:gwyng-dev/eslint-config-gwyng",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitepress": "^1.3.3"
   }
 }
